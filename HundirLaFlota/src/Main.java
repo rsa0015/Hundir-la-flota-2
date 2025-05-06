@@ -4,8 +4,6 @@ import java.util.Scanner;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-//- Crea el juego de hundir la flota. 🚢🌊
-        //el mapa inicial
         String[][] arrayMapa1 = {
                 {"\uD83C\uDF0A", "\uD83D\uDEA2", "\uD83D\uDEA2", "\uD83D\uDEA2", "\uD83C\uDF0A"},
                 {"\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A"},
@@ -16,62 +14,48 @@ public class Main {
         String[][] arrayMapa2 = {
                 {"\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A"},
                 {"\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83D\uDEA2", "\uD83D\uDEA2", "\uD83D\uDEA2"},
-                {"\uD83C\uDF0A", "\uD83C\uDF0A","\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A"},
+                {"\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A", "\uD83C\uDF0A"},
                 {"\uD83D\uDEA2", "\uD83D\uDEA2", "\uD83D\uDEA2", "\uD83C\uDF0A", "\uD83C\uDF0A"}
         };
-
 
         System.out.println("Bienvenidos al juego de Hundir la Flota");
         Scanner scanner = new Scanner(System.in);
         int casillaPosicionX;
         int casillaPosicionY;
         String[][] tableroAuxiliar = arrayMapa2;
-        int jugador1 = 1;
-        int jugador2 = 2;
-        int jugadorActivo=jugador2;
+        int jugadorActivo = 2; // Comienza el jugador 2
         do {
-            if (jugadorActivo == jugador1) {
-                jugadorActivo=jugador2;
-                tableroAuxiliar = arrayMapa1;
-                System.out.println("Turno del jugador 2.");
-            } else {
-                jugadorActivo=jugador1;
-                tableroAuxiliar = arrayMapa2;
-                System.out.println("Turno del jugador 1.");
-            }
-            //Pedimos las posiciones por teclado
-            System.out.println("Indica dos posiciones. Para abandonar, pon un número mayor que 10.");
-            casillaPosicionX = scanner.nextInt();
-            casillaPosicionY = scanner.nextInt();
+            jugadorActivo = cambiarTurno(jugadorActivo, tableroAuxiliar); // Cambiar turno
+            tableroAuxiliar = (jugadorActivo == 1) ? arrayMapa1 : arrayMapa2; // Seleccionar el mapa adecuado
+            int[] posiciones = pedirPosiciones(scanner); // Pedir posiciones
+            casillaPosicionX = posiciones[0];
+            casillaPosicionY = posiciones[1];
 
-
-            //Comprobamos si en las posiciones hay barcos
-                if (casillaPosicionX>=0 && casillaPosicionX <4 && casillaPosicionY>=0 && casillaPosicionY<5) {
-                    if (atacarMapa(tableroAuxiliar, casillaPosicionX, casillaPosicionY) == false) {
-                        System.out.println("Agua.");
-                        tableroAuxiliar[casillaPosicionX][casillaPosicionY] = "\uD83D\uDCA7";
-                    } else {
-                        System.out.println("Tocado.");
-                        tableroAuxiliar[casillaPosicionX][casillaPosicionY] = "\uD83E\uDDE8";
-                        esHundido(tableroAuxiliar);
-                    }
+            if (casillaPosicionX >= 0 && casillaPosicionX < 4 && casillaPosicionY >= 0 && casillaPosicionY < 5) {
+                if (atacarMapa(tableroAuxiliar, casillaPosicionX, casillaPosicionY) == false) {
+                    System.out.println("Agua.");
+                    tableroAuxiliar[casillaPosicionX][casillaPosicionY] = "\uD83D\uDCA7";
                 } else {
-                    System.out.println("Estás fuera del mapa.");
+                    System.out.println("Tocado.");
+                    tableroAuxiliar[casillaPosicionX][casillaPosicionY] = "\uD83E\uDDE8";
+                    esHundido(tableroAuxiliar);
                 }
+            } else {
+                System.out.println("Estás fuera del mapa.");
+            }
 
-                dibujarMapa(tableroAuxiliar);
+            dibujarMapa(tableroAuxiliar);
 
-
-        } while (casillaPosicionX <=10 && casillaPosicionY <= 10 && hayBarcos(tableroAuxiliar));
+        } while (casillaPosicionX <= 10 && casillaPosicionY <= 10 && hayBarcos(tableroAuxiliar));
 
         if (!hayBarcos(tableroAuxiliar)) {
             System.out.println("¡Enhorabuena! Has hundido todos los barcos.");
         }
-        System.out.println("Resultados del jugador 1:");dibujarMapa(arrayMapa2);
-        System.out.println("Resultados del jugador 2:");dibujarMapa(arrayMapa1);
 
-
-
+        System.out.println("Resultados del jugador 1:");
+        dibujarMapa(arrayMapa2);
+        System.out.println("Resultados del jugador 2:");
+        dibujarMapa(arrayMapa1);
     }
 
     /**
@@ -146,4 +130,25 @@ public class Main {
             }
         }
     }
+
+    // Método para cambiar de turno
+    public static int cambiarTurno(int jugadorActivo, String[][] tableroAuxiliar) {
+        if (jugadorActivo == 1) {
+            System.out.println("Turno del jugador 2.");
+            return 2;  // Cambia al jugador 2
+        } else {
+            System.out.println("Turno del jugador 1.");
+            return 1;  // Cambia al jugador 1
+        }
+    }
+
+    // Método para pedir posiciones
+    public static int[] pedirPosiciones(Scanner scanner) {
+        int[] posiciones = new int[2];
+        System.out.println("Indica dos posiciones. Para abandonar, pon un número mayor que 10.");
+        posiciones[0] = scanner.nextInt(); // Fila
+        posiciones[1] = scanner.nextInt(); // Columna
+        return posiciones;
+    }
+
 }
